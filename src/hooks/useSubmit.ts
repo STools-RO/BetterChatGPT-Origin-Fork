@@ -6,6 +6,7 @@ import { getChatCompletion, getChatCompletionStream } from '@api/api';
 import { parseEventSource } from '@api/helper';
 import { limitMessageTokens, updateTotalTokenUsed } from '@utils/messageUtils';
 import { _defaultChatConfig } from '@constants/chat';
+import { _generateTitleConfig } from '@constants/chat';
 import { officialAPIEndpoint } from '@constants/auth';
 
 const useSubmit = () => {
@@ -34,14 +35,14 @@ const useSubmit = () => {
         data = await getChatCompletion(
           useStore.getState().apiEndpoint,
           message,
-          _defaultChatConfig
+          _generateTitleConfig
         );
       } else if (apiKey) {
         // own apikey
         data = await getChatCompletion(
           useStore.getState().apiEndpoint,
           message,
-          _defaultChatConfig,
+          _generateTitleConfig,
           apiKey
         );
       }
@@ -70,11 +71,7 @@ const useSubmit = () => {
       if (chats[currentChatIndex].messages.length === 0)
         throw new Error('No messages submitted!');
 
-      const messages = limitMessageTokens(
-        chats[currentChatIndex].messages,
-        chats[currentChatIndex].config.max_tokens,
-        chats[currentChatIndex].config.model
-      );
+      const messages = chats[currentChatIndex].messages
       if (messages.length === 0) throw new Error('Message exceed max token!');
 
       // no api key (free)
@@ -189,7 +186,7 @@ const useSubmit = () => {
 
         // update tokens used for generating title
         if (countTotalTokens) {
-          const model = _defaultChatConfig.model;
+          const model = _generateTitleConfig.model;
           updateTotalTokenUsed(model, [message], {
             role: 'assistant',
             content: title,
